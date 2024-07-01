@@ -1,0 +1,196 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_unsigned.all;
+use ieee.numeric_std.all;
+use ieee.std_logic_arith.all;
+entity TrafficLight is
+port(
+	clk,clrn:in std_logic;
+	port_cnt:out std_logic_vector(6 downto 0);
+	
+	--port_branch_cnt:out std_logic_vector(6 downto 0);--主干倒计时
+	--port_main_cnt:out std_logic_vector(6 downto 0);--支干倒计时
+	
+	port_red_main_straight:out std_logic;
+	port_green_main_straight:out std_logic;
+	port_yellow_main_straight:out std_logic;
+	
+	port_red_branch_straight:out std_logic;
+	port_green_branch_straight:out std_logic;
+	port_yellow_branch_straight:out std_logic;
+	
+	port_red_main_left:out std_logic;
+	port_green_main_left:out std_logic;
+	port_yellow_main_left:out std_logic;
+	
+	port_red_branch_left:out std_logic;
+	port_green_branch_left:out std_logic;
+	port_yellow_branch_left:out std_logic
+);
+end TrafficLight;
+architecture bhv of TrafficLight is
+signal cnt1,cnt2,cnt3,cnt4:integer;
+
+--signal main_cnt:integer;
+--signal branch_cnt:integer;
+
+signal red_main_straight:std_logic;
+signal green_main_straight:std_logic;
+signal yellow_main_straight:std_logic;
+
+signal red_branch_straight:std_logic;
+signal green_branch_straight:std_logic;
+signal yellow_branch_straight:std_logic;
+
+signal red_main_left:std_logic;
+signal green_main_left:std_logic;
+signal yellow_main_left:std_logic;
+	
+signal red_branch_left:std_logic;
+signal green_branch_left:std_logic;
+signal yellow_branch_left:std_logic;
+
+begin 
+	Main_Light:process(clk,clrn,cnt1)
+	begin 
+		if clrn='0' then 
+			cnt1<=0;			
+		elsif clk'event and clk='1' then 
+			if cnt1<110 then 
+				cnt1<=cnt1+1;
+			else
+				cnt1<=0;
+			end if;
+		end if;
+		
+		if cnt1<40 then--主干道直行绿灯40秒
+			red_main_straight<='0';
+			green_main_straight<='1';
+			yellow_main_straight<='0';
+			red_main_left<='1';
+			green_main_left<='0';
+			yellow_main_left<='0';
+		elsif cnt1>39 and cnt1<45 then--主干道直行黄灯5秒
+			red_main_straight<='0';
+			green_main_straight<='0';
+			if cnt1 MOD 2 = 1 then
+				yellow_main_straight<='1';
+			else
+				yellow_main_straight<='0';
+			end if;
+			red_main_left<='1';
+			green_main_left<='0';
+			yellow_main_left<='0';
+		elsif cnt1>44 and cnt1<65 then--主干道左转绿灯20秒
+			green_main_straight<='0';
+			red_main_straight<='1';
+			yellow_main_straight<='0';
+			green_main_left<='1';
+			red_main_left<='0';
+			yellow_main_left<='0';
+		elsif cnt1>64 and cnt1<70 then--主干道左转黄灯5秒
+			red_main_straight<='1';
+			green_main_straight<='0';
+			yellow_main_straight<='0';
+			red_main_left<='0';
+			green_main_left<='0';
+			if cnt1 MOD 2 = 1 then
+				yellow_main_left<='1';
+			else
+				yellow_main_left<='0';
+			end if;
+		else--其余时间都是红灯
+			red_main_straight<='1';
+			green_main_straight<='0';
+			yellow_main_straight<='0';
+			red_main_left<='1';
+			green_main_left<='0';
+			yellow_main_left<='0';
+		end if;
+				
+		port_red_main_straight<=red_main_straight;
+		port_green_main_straight<=green_main_straight;
+		port_yellow_main_straight<=yellow_main_straight;
+		
+		port_red_main_left<=red_main_left;
+		port_green_main_left<=green_main_left;
+		port_yellow_main_left<=yellow_main_left;
+		
+		--port_main_cnt<=cnt1;
+		--main_cnt<='1';
+		--port_main_cnt<=main_cnt;
+		
+		port_cnt<=conv_std_logic_vector(cnt1,7);
+	end process;
+	
+	Branch_Light:process(clk,clrn,cnt2)
+	begin
+		if clrn='0' then 
+			cnt2<=0;			
+		elsif clk'event and clk='1' then 
+			if cnt2<110 then 
+				cnt2<=cnt2+1;
+			else
+				cnt2<=0;
+			end if;
+		end if;
+		
+		if cnt2>69 and cnt2<90 then--副干道直行绿灯20秒
+			red_branch_straight<='0';
+			green_branch_straight<='1';
+			red_branch_left<='1';
+			green_branch_left<='0';
+			yellow_branch_straight<='0';
+			yellow_branch_left<='0';
+		elsif cnt2>89 and cnt2<95 then--主干道直行黄灯5秒
+			red_branch_straight<='0';
+			green_branch_straight<='0';
+			red_branch_left<='1';
+			green_branch_left<='0';
+			if cnt2 MOD 2 = 1 then
+			yellow_branch_straight<='1';
+			else
+				yellow_branch_straight<='0';
+			end if;
+			yellow_branch_left<='0';
+		elsif cnt2>94 and cnt2<105 then--主干道左转绿灯10秒
+			red_branch_straight<='1';
+			green_branch_straight<='0';
+			red_branch_left<='0';
+			green_branch_left<='1';
+			yellow_branch_straight<='0';
+			yellow_branch_left<='0';
+		elsif cnt2>104 and cnt2<110 then--主干道左转黄灯5秒
+			red_branch_straight<='0';
+			green_branch_straight<='0';
+			red_branch_left<='0';
+			green_branch_left<='0';
+			yellow_branch_straight<='0';
+			if cnt2 MOD 2 = 1 then
+			yellow_branch_left<='1';
+			else
+				yellow_branch_left<='0';
+			end if;
+		else--其余时间都是红灯
+			red_branch_straight<='1';
+			green_branch_straight<='0';
+			red_branch_left<='1';
+			green_branch_left<='0';
+			yellow_branch_straight<='0';
+			yellow_branch_left<='0';
+		end if;
+		
+		port_red_branch_straight<=red_branch_straight;
+		port_green_branch_straight<=green_branch_straight;
+		port_yellow_branch_straight<=yellow_branch_straight;
+				
+		port_red_branch_left<=red_branch_left;
+		port_green_branch_left<=green_branch_left;
+		port_yellow_branch_left<=yellow_branch_left;
+		
+		--branch_cnt<='1';
+		--port_branch_cnt<=branch_cnt;
+		
+	end process;
+	
+end architecture bhv;

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSLab4</title>
+    <style>
+        #big-box {
+            margin: auto;
+            width: 1000px; /* 固定宽度 */
+            border: 1px solid black;
+            display: flex;
+        }
+        #big-box2{
+            margin: auto;
+            width: 1000px; /* 固定宽度 */
+            border: 1px solid black;
+            display: flex;
+        }
+        .small-box {
+            height: 50px; /* 固定高度 */
+            border: 1px solid red;
+            box-sizing: border-box; /* 包括边框和内边距在内计算宽度 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <div style="width: 400px;margin: 20px auto;display: flex;flex-direction: row;">
+            <div style="width: 200px;margin: 20px;">
+                <input type="radio" name="choice" value="SCAN">
+                <label for="option1">SCAN</label><br>
+            </div>
+            <div style="width: 200px;margin: 20px;">
+                <input type="radio" name="choice" value="CSCAN">
+                <label for="option2">CSCAN</label><br>
+            </div>
+        </div>
+        <div style="display: flex;width: 800px;margin: auto;">
+            <button style="width: 100px;margin: 0 140px;" onclick="go()">生成</button>
+            <button style="width: 100px;margin: 0 140px;" onclick="next()" id='next' disabled>下一步</button>
+        </div>
+        <div style="height: 30px;"></div>
+        <div>
+            <label>请求序列</label>
+            <div id="big-box"></div>
+        </div>
+        <div>
+            <label>寻道长度</label>
+            <div id="big-box2"></div>
+        </div>
+    </div>
+    <script>
+        let option=""
+        function getRandom(l, r) {
+            return Math.floor(Math.random() * (r - l) + l)
+        }
+        function getRandomList(n, min, max) {
+            if (max - min + 1 < n) {
+                throw new Error("范围内的数字不足以生成足够的唯一数字");
+            }
+            const uniqueNumbers = new Set();
+            while (uniqueNumbers.size < n) {
+                const randomNum = Math.floor(Math.random() * (max - min + 1)) + min;
+                uniqueNumbers.add(randomNum);
+            }
+            return Array.from(uniqueNumbers);
+        }
+        function getSelectedOption() {       
+            let selectRadio;
+            document.querySelectorAll('input[name="choice"]').forEach((radio) => {
+                if (radio.checked)
+                    selectRadio=radio.value
+            });
+            return selectRadio
+        }
+        let boxList=[]
+        let boxList2=[]
+        let ptr=-1
+        let startPos=-1
+        function addSmallBoxes(list) {
+            const bigBox = document.getElementById('big-box')
+            const bigBox2 = document.getElementById('big-box2')
+            bigBox.innerHTML = ''; 
+            bigBox2.innerHTML= '';
+            const n=list.length
+            const bigBoxWidth = bigBox.clientWidth; 
+            const smallBoxWidth = bigBoxWidth / n; 
+            for (let i = 0; i < n; i++) {
+                const smallBox = document.createElement('div');
+                smallBox.classList.add('small-box');
+                smallBox.style.width = `${smallBoxWidth}px`;
+                smallBox.textContent = list[i]; 
+                smallBox.id=`small-box-${i}`
+                boxList.push(smallBox)
+                bigBox.appendChild(smallBox)
+                
+                const smallBox2 = document.createElement('div');
+                smallBox2.classList.add('small-box');
+                smallBox2.style.width = `${smallBoxWidth}px`;
+                smallBox2.textContent = -1; 
+                smallBox2.id=`small-box2-${i}`
+                boxList2.push(smallBox2)
+                bigBox2.appendChild(smallBox2)
+            }
+        }
+        function go(){
+            let n=getRandom(10,20)
+            let list=getRandomList(n,1,200)
+            list.sort(function(a, b){return a-b})
+            boxList.length=[]
+            boxList2.length=[]
+            addSmallBoxes(list)
+            ptr=Math.floor(boxList.length/2)
+            startPos=ptr
+            boxList[ptr].style.backgroundColor="yellow"
+            boxList2[ptr].textContent=0
+            document.querySelector('#next').disabled=false
+        }
+        function CSCAN(){
+            const n=boxList.length
+            if((ptr+1)%n==startPos){
+                var sum=0
+                boxList2.forEach((box)=>{
+                    sum+=Number(box.textContent)
+                })
+                alert("平均寻道长度"+sum/n)
+                return
+            }
+            boxList2[(ptr+1)%n].textContent=Math.abs(Number(boxList[ptr%n].textContent)-Number(boxList[(ptr+1)%n].textContent))
+            ptr+=1
+            boxList.forEach((box)=>{
+                box.style.backgroundColor="white"
+            })
+            boxList[ptr%n].style.backgroundColor="yellow"
+        }
+        function SCAN(){
+            const n=boxList.length
+            let prePtr=ptr
+            if(ptr+1>startPos)
+                if(ptr+1==n)
+                    ptr=startPos-1
+                else
+                    ptr+=1
+            else
+                if(ptr-1==-1){
+                    var sum=0
+                    boxList2.forEach((box)=>{
+                        sum+=Number(box.textContent)
+                    })
+                    alert("平均寻道长度："+sum/n)
+                    return
+                }
+                else 
+                    ptr-=1
+            boxList2[ptr].textContent=Math.abs(Number(boxList[ptr].textContent)-Number(boxList[prePtr].textContent))
+            boxList.forEach((box)=>{
+                box.style.backgroundColor="white"
+            })
+            boxList[ptr%n].style.backgroundColor="yellow"
+
+        }
+        function next(){
+            let option=getSelectedOption()
+            if(option=='SCAN')
+                SCAN()
+            else if(option=='CSCAN')
+                CSCAN()
+        }
+    </script>
+</body>
+</html>

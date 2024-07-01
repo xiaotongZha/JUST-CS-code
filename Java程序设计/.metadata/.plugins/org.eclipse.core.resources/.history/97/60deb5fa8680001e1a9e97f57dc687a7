@@ -1,0 +1,14 @@
+package mypack;
+
+public class T1 {
+	public static void main(String[] args) {
+		
+		String s1="あいうえおかきくけこさしすせそ";
+		String s2="アイウエオ";
+		String s3="你好";
+		char[]ca1=s3.toCharArray();
+		for(char c:ca1) {
+			
+		}
+	}
+}

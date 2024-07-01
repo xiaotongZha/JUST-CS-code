@@ -1,0 +1,10 @@
+package mypack;
+
+public class T1 {
+	public static void main(String[] args) {
+		
+		String s1="あいうえおかきくけこさしすせそ";
+		String s2="アイウエオ";
+		System.out.println(s1.length());
+	}
+}

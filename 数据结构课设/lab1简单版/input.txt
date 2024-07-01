@@ -1,0 +1,3 @@
+F101    City_A  City_B  2023-01-01  12:00   15:00   Airplane    520.5
+F102    City_C  City_D  2023-01-02  14:30   17:30   Airplane    610.2
+F103    City_E  City_F  2023-01-03  10:15   13:15   Airplane    480.7
